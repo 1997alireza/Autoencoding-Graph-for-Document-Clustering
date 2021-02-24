@@ -1,10 +1,15 @@
+"""
+Data cleansing based on the details in the paper
+"Determining Gains Acquired from Word Embedding Quantitatively Using Discrete Distribution Clustering"
+"""
+
 import paths
 import os
 import re
 import csv
 
 
-def prepare_the20nes():
+def __prepare_the20nes():
     ds = open(paths.the20news_dataset, mode='w')  # saving cleaned database
     ds_writer = csv.writer(ds, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     ds_writer.writerow(['category', 'document'])  # column names
@@ -29,7 +34,7 @@ def prepare_the20nes():
     ds.close()
 
 
-def read():  # 18692 documents in 20 categories
+def __read_dataset():  # 18692 documents in 20 categories
     with open(paths.the20news_dataset) as ds:
         reader = csv.reader(ds, delimiter=',')
         headers = next(reader)

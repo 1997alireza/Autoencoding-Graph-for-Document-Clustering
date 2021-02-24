@@ -9,7 +9,7 @@ import csv
 import paths
 
 
-def prepare_reuters():
+def __prepare_reuters():
     id2cat = defaultdict(list)
 
     for line in open(paths.reuters_original_dataset + '/cats.txt', 'r'):
@@ -51,7 +51,7 @@ def prepare_reuters():
                 ds_writer.writerow([cat, doc])
 
 
-def read():  # 7884 documents in 10 categories
+def __read_dataset():  # 7884 documents in 10 categories
     with open(paths.reuters_dataset) as ds:
         reader = csv.reader(ds, delimiter=',')
         headers = next(reader)
