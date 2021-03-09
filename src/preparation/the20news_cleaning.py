@@ -27,6 +27,7 @@ def __prepare_the20nes():
                                      r'\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!'
                                      r'()\[\]{};:\'".,<>?«»“”‘’]))', '', doc)  # remove URls
                         doc = re.sub(r'\S*@\S*\s?', '', doc)  # remove email addresses
+                        doc = re.sub(r'(\t|\n| )+', ' ', doc).strip()
 
                         if len(doc.split()) >= 10:  # delete documents with less than ten words
                             ds_writer.writerow([cat, doc])

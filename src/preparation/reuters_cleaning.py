@@ -7,6 +7,7 @@ from nltk.corpus import reuters
 from collections import defaultdict
 import csv
 import paths
+import re
 
 
 def __prepare_reuters():
@@ -48,6 +49,7 @@ def __prepare_reuters():
         for cat in top_cat2docids:
             for doc_id in top_cat2docids[cat]:
                 doc = reuters.raw(doc_id)
+                doc = re.sub(r'(\t|\n| )+', ' ', doc).strip()
                 ds_writer.writerow([cat, doc])
 
 
