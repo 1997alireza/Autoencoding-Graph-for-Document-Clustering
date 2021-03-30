@@ -1,4 +1,4 @@
-# Multi-Task Graph Autoencoders
+# Multi-Task Graph Autoencoders, LoNGAE (Local Neighborhood Graph Autoencoder)
 
 This is a Keras implementation of the symmetrical autoencoder architecture with parameter sharing for the tasks of link prediction and semi-supervised node classification, as described in the following:
 

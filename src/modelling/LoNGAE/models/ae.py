@@ -82,17 +82,6 @@ def masked_mean_squared_error(y_true, y_pred):
     return K.mean(masked_squared_err, axis=-1)
 
 
-def create_weighted_cosine_similarity(weights):
-    """ It returns a Cosine Similarity loss with a balancing weight on features """
-    def weighted_cosine_similarity(y_true, y_pred):
-        inner_prod = K.sum(y_true * y_pred * weights, axis=-1)
-        y_true_norm = K.sum(y_true * y_true * weights, axis=-1)
-        y_pred_norm = K.sum(y_pred * y_pred * weights, axis=-1)
-        return inner_prod / (K.sqrt(y_true_norm) * K.sqrt(y_pred_norm))
-
-    return weighted_cosine_similarity
-
-
 def autoencoder(dataset, adj, weights=None):
     h, w = adj.shape
     sparse_net = dataset in ['conflict', 'metabolic', 'protein']
@@ -215,13 +204,13 @@ def autoencoder_with_node_features(adj_row_length, features_length, node_feature
     )
 
     # compile the autoencoder
-    adam = optimizers.Adam(lr=0.001, decay=0.0)
+    adam = optimizers.Adam(lr=0.01, decay=0.0)
 
     autoencoder.compile(
         optimizer=adam,
         loss={'decoded_adj': masked_mean_squared_error,
-              'decoded_feats': create_weighted_cosine_similarity(weights=node_features_weight)},
-        loss_weights={'decoded_adj': 2.0, 'decoded_feats': 1.0}
+              'decoded_feats': create_weighted_cosine_similarity_loss(weights=node_features_weight)},
+        loss_weights={'decoded_adj': 1.0, 'decoded_feats': 1.0}
     )
     if weights is not None:
         autoencoder.load_weights(weights)
@@ -251,10 +240,6 @@ def autoencoder_multitask(adj, feats, labels, weights=None):
     ### Second set of encoding transformation ###
     encoded = Dense(128, activation='relu',
             name='encoded2', **kwargs)(encoded)
-    # if dataset == 'pubmed':  # TODO: remove
-    #     encoded = Dropout(rate=0.5, name='drop')(encoded)
-    # else:
-    # encoded = Dropout(rate=0.8, name='drop')(encoded)
 
     encoded = Dropout(rate=0.5, name='drop')(encoded)
 

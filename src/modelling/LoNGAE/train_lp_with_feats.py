@@ -11,7 +11,6 @@ Usage: python train_lp_with_feats.py <dataset_str> <gpu_id>
 import numpy as np
 from keras import backend as K
 from sklearn.preprocessing import MaxAbsScaler
-
 from src.utils.mathematical import MSE
 from .utils import generate_data, batch_data
 from .utils_gcn import split_adjacency_data
@@ -34,14 +33,7 @@ def run(adj, feats, node_features_weight, evaluate_lp=False):
     :return:
     """
     feats = MaxAbsScaler().fit_transform(feats)
-
     train = adj.copy()
-
-    # TODO: for us?
-    # if dataset != 'pubmed':
-    #     train.setdiag(1.0)
-    # else:
-    #     train.setdiag(0.0)
 
     if evaluate_lp:
         print('\nPreparing test split...\n')
@@ -74,8 +66,8 @@ def run(adj, feats, node_features_weight, evaluate_lp=False):
     aug_adj = np.hstack((adj, feats))
 
     # Specify some hyperparameters
-    epochs = 50
-    train_batch_size = 8
+    epochs = 20  # TODO: change it for the final test, and remove link prediction evaluation part
+    train_batch_size = 20
     val_batch_size = 256
 
     print('\nFitting autoencoder model...\n')
@@ -121,12 +113,6 @@ def run(adj, feats, node_features_weight, evaluate_lp=False):
             predictions.extend(decoded_lp[test_r, test_c])
             predictions.extend(decoded_lp[test_c, test_r])
             predictions = np.array(predictions)
-            # print('Val AUC: {:6f}'.format(auc_score(labels, predictions)))  # continuous format is not supported
-            # print('Val AP: {:6f}'.format(ap_score(labels, predictions)))  # continuous format is not supported
-            # print('Val EuclideanDist: {:6f}'.format(euclidean_distance(labels, predictions)))
-            # print('Link prediction val (including links with weight zero) MSE: {:6f}'.format(MSE(labels, predictions)))
-
-            # print(list(zip(predictions[non_zero_labels_idx] * 10, labels[non_zero_labels_idx] * 10)))
             print('Link prediction val MSE: {:6f}'.format(MSE(labels[non_zero_labels_idx], predictions[non_zero_labels_idx])))
 
     print('\nAll done.')

@@ -1,13 +1,13 @@
 import keras.backend as K
 from keras.layers import Layer
-from keras.legacy import interfaces
+# from keras.legacy import interfaces
 from keras.engine import InputSpec
 from keras import activations, initializers, regularizers, constraints
 
 
 class DenseTied(Layer):
 
-    @interfaces.legacy_dense_support
+    # @interfaces.legacy_dense_support
     def __init__(self, units,
                  tie_to=None,  # input layer name for weight-tying
                  transpose=False,  # transpose weights from tie_to layer
