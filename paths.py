@@ -6,6 +6,7 @@ if root[-1] != '/':
 
 # directories
 src = root + 'src/'
+models = root + 'models/'
 reuters_original_dataset = root + 'venv/share/nltk_data/corpora/reuters/'
 the20news_original_dataset = root + 'venv/share/20news-18828/'
 

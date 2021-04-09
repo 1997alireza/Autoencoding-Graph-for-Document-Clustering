@@ -2,10 +2,14 @@ from src.modelling.NMF_keyword_extraction import extract_top_keywords
 from src.utils.text import split_document
 from src.processing.edge_weighting import sentence_similarity_edge
 from src.modelling.SBERT_transformer import get_sentence_transformer
+from src.utils.datasets import fetch_dataset
+import paths
 import numpy as np
+import pickle
+from src.utils.text import preprocess
 
 
-def create_network(documents):
+def create_network(documents, dataset_name=None):
     """
 
     :param documents: list of documents, each document is taken as a string
@@ -19,32 +23,61 @@ def create_network(documents):
     sentence_transformer = get_sentence_transformer()
     documents_sentences = [split_document(doc) for doc in documents]
 
-    embeddings = [sentence_transformer.encode(sentences) for sentences in documents_sentences]
-    # a 2d list of embeddings of each sentence in each document
-
-    keyword_sents = extract_top_keywords(documents_sentences)
-    nodes = []  # a list of {'keyword', 'feature'}
-    nodes_sentences_idx_tuple = []  # [(i,j)] a list of indexes of related sentences to each node
     doc_to_node_mapping = [[] for _ in range(len(documents_sentences))]
     # doc_to_node_mapping[i] is a list containing the indexes of the nodes related to the i-th document
 
-    for keyword in keyword_sents:
+    keyword_sents = extract_top_keywords(documents_sentences, dataset_name=dataset_name)
+    nodes = []  # a list of {'keyword', 'feature'}
+    adjacency = np.zeros([len(keyword_sents), len(keyword_sents)], dtype=float)
+
+    for node_idx, keyword in enumerate(keyword_sents):
+        print('node {}/{}'.format(node_idx, len(keyword_sents)))
         sentences_idx_tuple = keyword_sents[keyword]
-        average_embeddings = \
-            np.sum([embeddings[doc_idx][sent_idx] for doc_idx, sent_idx in sentences_idx_tuple], axis=0)\
-            / len(sentences_idx_tuple)
+        embeddings_list = sentence_transformer.encode(
+            [documents_sentences[doc_idx][sent_idx] for doc_idx, sent_idx in sentences_idx_tuple])
+        average_embeddings = np.sum(embeddings_list, axis=0) / len(sentences_idx_tuple)
+
+        # node feature
         nodes.append({'keyword': keyword, 'feature': average_embeddings})
-        nodes_sentences_idx_tuple.append(sentences_idx_tuple)
 
-        node_idx = len(nodes) - 1
-        for sentence_doc_id, _ in sentences_idx_tuple:
-            doc_to_node_mapping[sentence_doc_id].append(node_idx)
+        # node adjacency vector
+        for other_node_idx, other_keyword in enumerate(keyword_sents):
+            print('--inner loop node {}/{}'.format(other_node_idx, len(keyword_sents)))
+            other_sentences_idx_tuple = keyword_sents[other_keyword]
+            other_embeddings_list = sentence_transformer.encode(
+                [documents_sentences[doc_idx][sent_idx] for doc_idx, sent_idx in other_sentences_idx_tuple])
+            edge_weight = sentence_similarity_edge(embeddings_list, other_embeddings_list)
+            adjacency[node_idx, other_node_idx] = edge_weight
 
-    adjacency = np.zeros([len(nodes), len(nodes)], dtype=float)
+        for doc_idx, _ in sentences_idx_tuple:
+            doc_to_node_mapping[doc_idx].append(node_idx)
 
-    for i, node_i_sentences_idx_tuple in enumerate(nodes_sentences_idx_tuple):
-        for j, node_j_sentences_idx_tuple in enumerate(nodes_sentences_idx_tuple):
-            edge_weight = sentence_similarity_edge(node_i_sentences_idx_tuple, node_j_sentences_idx_tuple, embeddings)
-            adjacency[i, j] = edge_weight
+    print('nodes\' features and adjacency vector are computed')
 
+    print('documents network is created')
     return nodes, adjacency, doc_to_node_mapping
+
+
+def get_documents_network(dataset_path=paths.the20news_dataset):
+    """
+
+    :param dataset_path: paths.reuters_dataset or paths.the20news_dataset
+    :return: nodes, adjacency, doc_to_node_mapping; same as create_network function,
+             and documents_labels; a list of each document's label
+    """
+
+    dataset_name = dataset_path.split('/')[-1].split('.')[0]
+    graph_file_path = paths.models + 'keyword_correlation_graph/' + dataset_name + '.pkl'
+    data = fetch_dataset(dataset_path)
+    try:
+        nodes, adjacency, doc_to_node_mapping = pickle.load(open(graph_file_path, 'rb'))
+        documents_labels = data[:, 0]
+        print('documents network are loaded')
+    except FileNotFoundError:
+        documents_labels = data[:, 0]
+        documents = data[:, 1]
+        documents = [preprocess(doc) for doc in documents]
+        nodes, adjacency, doc_to_node_mapping = create_network(documents, dataset_name)
+        pickle.dump((nodes, adjacency, doc_to_node_mapping), open(graph_file_path, 'wb'))
+
+    return nodes, adjacency, doc_to_node_mapping, documents_labels

@@ -7,27 +7,46 @@ from sklearn.decomposition import NMF
 from src.utils.mathematical import cosine_similarity
 from collections import defaultdict
 import numpy as np
+import pickle
+import paths
 
 
-def extract_top_keywords(documents_sentences, max_number=50):
+def extract_top_keywords(documents_sentences, max_number=50, dataset_name=None):
     """
     :param documents_sentences: a 2d list of sentences. the sentences of each row are related to one document
     :param max_number: maximum number of returned keywords
+    :param dataset_name: is used to save or load top keywords
     :return: top keywords with the list of related sentences: dictionary of {keyword: [document index, sentence index in document]}
     """
+    dataset_name = None # TODO
 
-    flatten_sentences = []
+    keywords_file_path = None
+    if dataset_name is not None:
+        keywords_file_path = paths.models + 'document_keywords_set/' + dataset_name + '.pkl'
+        try:
+            keyword_sents = pickle.load(open(keywords_file_path, 'rb'))
+            print('top keywords of documents are loaded')
+            return keyword_sents
+        except FileNotFoundError:
+            pass
+
     indexes_mapping = {}  # indexes_mapping[i, j] = k; means documents[i, j] = flatten_sentences[k]
-    for i, doc in enumerate(documents_sentences):
-        for j, sent in enumerate(doc):
-            indexes_mapping[i, j] = len(flatten_sentences)
-            flatten_sentences.append(sent)
 
-    vectorizer = TfidfVectorizer(max_df=0.95, min_df=2, max_features=1000, stop_words='english')
-    tfidf = vectorizer.fit_transform(flatten_sentences)
+    def sentences_iterator():
+        index = 0
+        for i, doc in enumerate(documents_sentences):
+            for j, sent in enumerate(doc):
+                indexes_mapping[i, j] = index
+                index += 1
+                yield sent
+
+    vectorizer = TfidfVectorizer(max_df=0.95, min_df=2, max_features=300, stop_words='english')
+    tfidf = vectorizer.fit_transform(sentences_iterator())
+
     feature_names = vectorizer.get_feature_names()
 
-    nmf = NMF().fit(tfidf)
+    print('Applying NMF decomposition...\n')
+    nmf = NMF(verbose=True).fit(tfidf)
     keys_score = []
     for topic_idx, topic in enumerate(nmf.components_):
         for keyword_idx, keyword_score in enumerate(topic):
@@ -50,6 +69,7 @@ def extract_top_keywords(documents_sentences, max_number=50):
     # [(i,j)]; a list of sentences that doesn't contain any of top keywords. they will attached to a dummy node (keyword)
 
     for i, doc in enumerate(documents_sentences):
+        print('doc {}/{}'.format(i, len(documents_sentences)))
         for j, sent in enumerate(doc):
             flatten_idx = indexes_mapping[i, j]
             sent_tfidf = tfidf[flatten_idx].toarray()[0]
@@ -61,7 +81,7 @@ def extract_top_keywords(documents_sentences, max_number=50):
                 if matched_topic[key_id] * sent_tfidf[key_id] > match_score:  # multiplication of tf-idf of the keyword in topic and sentence
                     match_score = matched_topic[key_id] * sent_tfidf[key_id]
                     matched_key = key_id
-                    # TODO: maybe is different from the original paper
+                    # TODO: maybe it is different from the original paper
 
             if matched_key is not None:
                 # it's possible that a document doesn't contain any of the top keywords
@@ -70,5 +90,24 @@ def extract_top_keywords(documents_sentences, max_number=50):
             else:  # it's a dummy sentence
                 dummy_sentences.append((i, j))
 
-    keyword_sents['THE_DUMMY_NODE'] = dummy_sentences
+                # TODO
+                if np.sum(sent_tfidf) != 0:
+                    print('{}, {}'.format(i, j))
+                    print(sent_tfidf)
+                    print(matched_topic)
+                    print('------')
+
+    exit() # Todo
+
+    # TODO: maybe it is different from the original paper
+    # keyword_sents['THE_DUMMY_NODE'] = dummy_sentences  # do not consider the dummy node in the graph
+
+    if keywords_file_path is not None:
+        pickle.dump(keyword_sents, open(keywords_file_path, 'wb'))
+    print('top keywords are extracted')
     return keyword_sents
+
+
+if __name__ == '__main__': # TODO
+    keys = extract_top_keywords(None, dataset_name='reuters-21578')
+    print(keys.keys())

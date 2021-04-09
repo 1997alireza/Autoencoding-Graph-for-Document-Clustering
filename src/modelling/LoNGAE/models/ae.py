@@ -71,80 +71,15 @@ def masked_categorical_crossentropy(y_true, y_pred):
 
 def masked_mean_squared_error(y_true, y_pred):
     """ Mean Squared Error with masking """
-    mask = K.not_equal(y_true, 0.0)  # ignoring edges with weight equals to zero (means there is no edge yet)
+    mask = K.not_equal(y_true, -1.0)  # ignoring deleted edges based on validation set
     mask = K.cast(mask, dtype=np.float32)
 
-    mask2 = K.not_equal(y_true, -1.0)  # ignoring deleted edges based on validation set
-    mask2 = K.cast(mask2, dtype=np.float32)
-
     err = y_true - y_pred
-    masked_squared_err = K.square(err) * mask * mask2
+    masked_squared_err = K.square(err) * mask
     return K.mean(masked_squared_err, axis=-1)
 
 
-def autoencoder(dataset, adj, weights=None):
-    h, w = adj.shape
-    sparse_net = dataset in ['conflict', 'metabolic', 'protein']
-
-    kwargs = dict(
-        use_bias=True,
-        kernel_initializer='glorot_normal',
-        kernel_regularizer=None,
-        bias_initializer='zeros',
-        bias_regularizer=None,
-        trainable=True,
-    )
-
-    data = Input(shape=(w,), dtype=np.float32, name='data')
-    if sparse_net:
-        # for conflict, metabolic, protein networks
-        noisy_data = Dropout(rate=0.2, name='drop0')(data)
-    else:
-        # for citation, blogcatalog, arxiv-grqc, and powergrid networks
-        noisy_data = Dropout(rate=0.5, name='drop0')(data)
-
-    ### First set of encoding transformation ###
-    encoded = Dense(256, activation='relu',
-            name='encoded1', **kwargs)(noisy_data)
-    if sparse_net:
-        encoded = Lambda(mvn, name='mvn1')(encoded)
-        encoded = Dropout(rate=0.5, name='drop1')(encoded)
-    
-    ### Second set of encoding transformation ###
-    encoded = Dense(128, activation='relu',
-            name='encoded2', **kwargs)(encoded)
-    if sparse_net:
-        encoded = Lambda(mvn, name='mvn2')(encoded)
-    encoded = Dropout(rate=0.5, name='drop2')(encoded)
-
-    # the encoder model maps an input to its encoded representation
-    encoder = Model([data], encoded)
-    encoded1 = encoder.get_layer('encoded1')
-    encoded2 = encoder.get_layer('encoded2')
-    
-    ### First set of decoding transformation ###
-    decoded = DenseTied(256, tie_to=encoded2, transpose=True,
-            activation='relu', name='decoded2')(encoded)
-    if sparse_net:
-        decoded = Lambda(mvn, name='mvn3')(decoded)
-        decoded = Dropout(rate=0.5, name='drop3')(decoded)
-    
-    ### Second set of decoding transformation - reconstruction ###
-    decoded = DenseTied(w, tie_to=encoded1, transpose=True,
-            activation='linear', name='decoded1')(decoded)
-    
-    # compile the autoencoder
-    adam = optimizers.Adam(lr=0.001, decay=0.0)
-    autoencoder = Model(inputs=[data], outputs=[decoded])
-    autoencoder.compile(optimizer=adam, loss=mbce)
-    
-    if weights is not None:
-        autoencoder.load_weights(weights)
-
-    return encoder, autoencoder
-
-
-def autoencoder_with_node_features(adj_row_length, features_length, node_features_weight, weights=None):
+def autoencoder_with_node_features(adj_row_length, features_length):
     h = adj_row_length
     w = adj_row_length + features_length
 
@@ -188,16 +123,15 @@ def autoencoder_with_node_features(adj_row_length, features_length, node_feature
             activation='linear', name='decoded1')(decoded)
 
     # output related to node features
-    decoded_feats_logits = Lambda(lambda x: x[:, h:],
-                        name='decoded_feats_logits')(decoded)
-
-    decoded_feats = Softmax(name='decoded_feats')(decoded_feats_logits)
+    decoded_feats = Lambda(lambda x: x[:, h:],
+                        name='decoded_feats')(decoded)
 
     # output related to adjacency
     decoded_adj_logits = Lambda(lambda x: x[:, :h],
-                        name='decoded_adj_logits')(decoded)
+                                name='decoded_adj_logits')(decoded)
 
     decoded_adj = Activation(activation='sigmoid', name='decoded_adj')(decoded_adj_logits)
+
 
     autoencoder = Model(
             inputs=[data], outputs=[decoded_adj, decoded_feats]
@@ -208,72 +142,9 @@ def autoencoder_with_node_features(adj_row_length, features_length, node_feature
 
     autoencoder.compile(
         optimizer=adam,
-        loss={'decoded_adj': masked_mean_squared_error,
-              'decoded_feats': create_weighted_cosine_similarity_loss(weights=node_features_weight)},
+        loss={'decoded_adj': 'mean_squared_error',
+              'decoded_feats': 'mean_squared_error'},
         loss_weights={'decoded_adj': 1.0, 'decoded_feats': 1.0}
     )
-    if weights is not None:
-        autoencoder.load_weights(weights)
-
-    return encoder, autoencoder
-
-
-def autoencoder_multitask(adj, feats, labels, weights=None):
-    adj = sp.hstack([adj, feats])
-    h, w = adj.shape
-
-    kwargs = dict(
-        use_bias=True,
-        kernel_initializer='glorot_normal',
-        kernel_regularizer=None,
-        bias_initializer='zeros',
-        bias_regularizer=None,
-        trainable=True,
-    )
-
-    data = Input(shape=(w,), dtype=np.float32, name='data')
- 
-    ### First set of encoding transformation ###
-    encoded = Dense(256, activation='relu',
-            name='encoded1', **kwargs)(data)
-
-    ### Second set of encoding transformation ###
-    encoded = Dense(128, activation='relu',
-            name='encoded2', **kwargs)(encoded)
-
-    encoded = Dropout(rate=0.5, name='drop')(encoded)
-
-    # the encoder model maps an input to its encoded representation
-    encoder = Model([data], encoded)
-    encoded1 = encoder.get_layer('encoded1')
-    encoded2 = encoder.get_layer('encoded2')
-
-    ### First set of decoding transformation ###
-    decoded = DenseTied(256, tie_to=encoded2, transpose=True,
-            activation='relu', name='decoded2')(encoded)
-    
-    ### Node classification ###
-    feat_data = Input(shape=(feats.shape[1],))
-    pred1 = Dense(labels.shape[1], activation='linear')(feat_data)
-    pred2 = Dense(labels.shape[1], activation='linear')(decoded)
-    prediction = add([pred1, pred2], name='prediction')
-
-    ### Second set of decoding transformation - reconstruction ###
-    decoded = DenseTied(w, tie_to=encoded1, transpose=True,
-            activation='linear', name='decoded1')(decoded)
-    
-    # compile the autoencoder
-    adam = optimizers.Adam(lr=0.001, decay=0.0)
-    autoencoder = Model(inputs=[data, feat_data],
-                        outputs=[decoded, prediction])
-    autoencoder.compile(
-            optimizer=adam,
-            loss={'decoded1': mbce,
-                  'prediction': masked_categorical_crossentropy},
-            loss_weights={'decoded1': 1.0, 'prediction': 1.0}
-    )
-
-    if weights is not None:
-        autoencoder.load_weights(weights)
 
     return encoder, autoencoder

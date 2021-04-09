@@ -1,9 +1,7 @@
-from src.utils.datasets import fetch_dataset
-from src.processing.document_network import create_network
+from src.processing.document_network import get_documents_network
 import paths
 
 if __name__ == '__main__':
-    data = fetch_dataset(paths.the20news_dataset)
-    labels = data[:, 0]
-    documents = data[:, 1]
-    nodes, adjacency, doc_to_node_mapping = create_network(documents)
+    nodes, adjacency, doc_to_node_mapping, documents_labels = get_documents_network(paths.reuters_dataset)
+    # TODO: some documents may have not any related nodes in the graph
+    print(nodes)

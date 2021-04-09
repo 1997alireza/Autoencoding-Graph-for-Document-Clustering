@@ -16,4 +16,5 @@ def fetch_dataset(dataset_path=paths.the20news_dataset):
         data = []
         for row in reader:
             data.append(row)
+    print('dataset is loaded')
     return np.array(data, dtype='object')
