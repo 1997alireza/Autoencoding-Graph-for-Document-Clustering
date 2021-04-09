@@ -18,7 +18,6 @@ def extract_top_keywords(documents_sentences, max_number=50, dataset_name=None):
     :param dataset_name: is used to save or load top keywords
     :return: top keywords with the list of related sentences: dictionary of {keyword: [document index, sentence index in document]}
     """
-    dataset_name = None # TODO
 
     keywords_file_path = None
     if dataset_name is not None:
@@ -68,6 +67,7 @@ def extract_top_keywords(documents_sentences, max_number=50, dataset_name=None):
     dummy_sentences = []
     # [(i,j)]; a list of sentences that doesn't contain any of top keywords. they will attached to a dummy node (keyword)
 
+    # TODO: change the procedure assigning sentences to keywords
     for i, doc in enumerate(documents_sentences):
         print('doc {}/{}'.format(i, len(documents_sentences)))
         for j, sent in enumerate(doc):
@@ -84,20 +84,11 @@ def extract_top_keywords(documents_sentences, max_number=50, dataset_name=None):
                     # TODO: maybe it is different from the original paper
 
             if matched_key is not None:
-                # it's possible that a document doesn't contain any of the top keywords
+                # it's possible that a document doesn't contain any common keywords with the matched topic
                 matched_keyword = feature_names[matched_key]
                 keyword_sents[matched_keyword].append((i, j))
             else:  # it's a dummy sentence
                 dummy_sentences.append((i, j))
-
-                # TODO
-                if np.sum(sent_tfidf) != 0:
-                    print('{}, {}'.format(i, j))
-                    print(sent_tfidf)
-                    print(matched_topic)
-                    print('------')
-
-    exit() # Todo
 
     # TODO: maybe it is different from the original paper
     # keyword_sents['THE_DUMMY_NODE'] = dummy_sentences  # do not consider the dummy node in the graph
@@ -106,8 +97,3 @@ def extract_top_keywords(documents_sentences, max_number=50, dataset_name=None):
         pickle.dump(keyword_sents, open(keywords_file_path, 'wb'))
     print('top keywords are extracted')
     return keyword_sents
-
-
-if __name__ == '__main__': # TODO
-    keys = extract_top_keywords(None, dataset_name='reuters-21578')
-    print(keys.keys())
