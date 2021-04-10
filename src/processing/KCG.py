@@ -67,7 +67,7 @@ def create_kcg(documents, dataset_name=None):
     return nodes, adjacency, doc_to_node_mapping
 
 
-def get_documents_kcg(dataset_path=paths.the20news_dataset):
+def get_documents_kcg(dataset_path):
     """
 
     :param dataset_path: paths.reuters_dataset or paths.the20news_dataset

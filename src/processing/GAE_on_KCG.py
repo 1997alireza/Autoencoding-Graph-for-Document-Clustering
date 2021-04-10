@@ -11,8 +11,8 @@ class GAE:
 
     def __init__(self, dataset_path):
         self.dataset_path = dataset_path
-        self._nodes, self._adjacency, self.doc_to_node_mapping, self.documents_labels = get_documents_kcg(self.dataset_path)
-        self._nodes_features = np.array([node['feature'] for node in self._nodes])
+        self.nodes, self._adjacency, self.doc_to_node_mapping, self.documents_labels = get_documents_kcg(self.dataset_path)
+        self._nodes_features = np.array([node['feature'] for node in self.nodes])
 
         try:
             self._encoder, self._ae = self._load_models()
