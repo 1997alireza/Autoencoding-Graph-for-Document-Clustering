@@ -1,9 +1,8 @@
-import paths
 import csv
 import numpy as np
 
 
-def fetch_dataset(dataset_path=paths.the20news_dataset):
+def fetch_dataset(dataset_path):
     """
 
     :param dataset_path: paths.reuters_dataset or paths.the20news_dataset
@@ -18,3 +17,7 @@ def fetch_dataset(dataset_path=paths.the20news_dataset):
             data.append(row)
     print('dataset is loaded')
     return np.array(data, dtype='object')
+
+
+def name_of_dataset(dataset_path):
+    return dataset_path.split('/')[-1].split('.')[0]

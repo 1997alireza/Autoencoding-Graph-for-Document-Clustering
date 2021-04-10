@@ -10,6 +10,8 @@ import numpy as np
 import pickle
 import paths
 
+THE_DUMMY_NODE = 'THE_DUMMY_NODE'
+
 
 def extract_top_keywords(documents_sentences, max_number=50, dataset_name=None):
     """
@@ -67,7 +69,6 @@ def extract_top_keywords(documents_sentences, max_number=50, dataset_name=None):
     dummy_sentences = []
     # [(i,j)]; a list of sentences that doesn't contain any of top keywords. they will attached to a dummy node (keyword)
 
-    # TODO: change the procedure assigning sentences to keywords
     for i, doc in enumerate(documents_sentences):
         print('doc {}/{}'.format(i, len(documents_sentences)))
         for j, sent in enumerate(doc):
@@ -81,7 +82,6 @@ def extract_top_keywords(documents_sentences, max_number=50, dataset_name=None):
                 if matched_topic[key_id] * sent_tfidf[key_id] > match_score:  # multiplication of tf-idf of the keyword in topic and sentence
                     match_score = matched_topic[key_id] * sent_tfidf[key_id]
                     matched_key = key_id
-                    # TODO: maybe it is different from the original paper
 
             if matched_key is not None:
                 # it's possible that a document doesn't contain any common keywords with the matched topic
@@ -90,8 +90,9 @@ def extract_top_keywords(documents_sentences, max_number=50, dataset_name=None):
             else:  # it's a dummy sentence
                 dummy_sentences.append((i, j))
 
-    # TODO: maybe it is different from the original paper
-    # keyword_sents['THE_DUMMY_NODE'] = dummy_sentences  # do not consider the dummy node in the graph
+    keyword_sents[THE_DUMMY_NODE] = dummy_sentences
+    # for reuters-21578 dataset, 84.61% sentences are assigned to the dummy node!
+    # for the20news dataset, 86.93% (269509/310018) sentences are assigned to the dummy node!
 
     if keywords_file_path is not None:
         pickle.dump(keyword_sents, open(keywords_file_path, 'wb'))

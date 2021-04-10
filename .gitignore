@@ -6,4 +6,6 @@ test/
 venv/
 datasets/
 
-*pkl
+*.pkl
+*.h5
+*.keras

@@ -1,4 +1,4 @@
-from src.modelling.NMF_keyword_extraction import extract_top_keywords
+from src.modelling.NMF_keyword_extraction import extract_top_keywords, THE_DUMMY_NODE
 from src.utils.text import split_document
 from src.processing.edge_weighting import sentence_similarity_edge
 from src.modelling.SBERT_transformer import get_sentence_transformer
@@ -7,6 +7,7 @@ import paths
 import numpy as np
 import pickle
 from src.utils.text import preprocess
+from src.utils.datasets import name_of_dataset
 
 
 def create_network(documents, dataset_name=None):
@@ -27,6 +28,10 @@ def create_network(documents, dataset_name=None):
     # doc_to_node_mapping[i] is a list containing the indexes of the nodes related to the i-th document
 
     keyword_sents = extract_top_keywords(documents_sentences, dataset_name=dataset_name)
+    if THE_DUMMY_NODE in keyword_sents:
+        del keyword_sents[THE_DUMMY_NODE]  # not considering the dummy node in the graph
+        # TODO: may differ from the original paper
+
     nodes = []  # a list of {'keyword', 'feature'}
     adjacency = np.zeros([len(keyword_sents), len(keyword_sents)], dtype=float)
 
@@ -65,8 +70,7 @@ def get_documents_network(dataset_path=paths.the20news_dataset):
     :return: nodes, adjacency, doc_to_node_mapping; same as create_network function,
              and documents_labels; a list of each document's label
     """
-
-    dataset_name = dataset_path.split('/')[-1].split('.')[0]
+    dataset_name = name_of_dataset(dataset_path)
     graph_file_path = paths.models + 'keyword_correlation_graph/' + dataset_name + '.pkl'
     data = fetch_dataset(dataset_path)
     try:
