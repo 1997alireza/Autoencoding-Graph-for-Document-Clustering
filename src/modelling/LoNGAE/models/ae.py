@@ -1,7 +1,6 @@
 import numpy as np
-import scipy.sparse as sp
 import tensorflow as tf
-from keras.layers import Input, Dense, Dropout, Lambda, add, Softmax, Activation
+from keras.layers import Input, Dense, Dropout, Lambda, Activation
 from keras.models import Model
 from keras import optimizers
 from keras import backend as K

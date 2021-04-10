@@ -1,3 +1,7 @@
+"""
+KCG is Keyword Correlation Graph
+"""
+
 from src.modelling.NMF_keyword_extraction import extract_top_keywords, THE_DUMMY_NODE
 from src.utils.text import split_document
 from src.processing.edge_weighting import sentence_similarity_edge
@@ -10,7 +14,7 @@ from src.utils.text import preprocess
 from src.utils.datasets import name_of_dataset
 
 
-def create_network(documents, dataset_name=None):
+def create_kcg(documents, dataset_name=None):
     """
 
     :param documents: list of documents, each document is taken as a string
@@ -63,11 +67,11 @@ def create_network(documents, dataset_name=None):
     return nodes, adjacency, doc_to_node_mapping
 
 
-def get_documents_network(dataset_path=paths.the20news_dataset):
+def get_documents_kcg(dataset_path=paths.the20news_dataset):
     """
 
     :param dataset_path: paths.reuters_dataset or paths.the20news_dataset
-    :return: nodes, adjacency, doc_to_node_mapping; same as create_network function,
+    :return: nodes, adjacency, doc_to_node_mapping; same as create_kcg function,
              and documents_labels; a list of each document's label
     """
     dataset_name = name_of_dataset(dataset_path)
@@ -81,7 +85,7 @@ def get_documents_network(dataset_path=paths.the20news_dataset):
         documents_labels = data[:, 0]
         documents = data[:, 1]
         documents = [preprocess(doc) for doc in documents]
-        nodes, adjacency, doc_to_node_mapping = create_network(documents, dataset_name)
+        nodes, adjacency, doc_to_node_mapping = create_kcg(documents, dataset_name)
         pickle.dump((nodes, adjacency, doc_to_node_mapping), open(graph_file_path, 'wb'))
 
     return nodes, adjacency, doc_to_node_mapping, documents_labels

@@ -1,5 +1,5 @@
 from src.modelling.LoNGAE.train_lp_with_feats import run
-from .document_network import get_documents_network
+from .KCG import get_documents_kcg
 import paths
 import numpy as np
 from src.utils.datasets import name_of_dataset
@@ -11,7 +11,7 @@ class GAE:
 
     def __init__(self, dataset_path):
         self.dataset_path = dataset_path
-        self._nodes, self._adjacency, self.doc_to_node_mapping, self.documents_labels = get_documents_network(self.dataset_path)
+        self._nodes, self._adjacency, self.doc_to_node_mapping, self.documents_labels = get_documents_kcg(self.dataset_path)
         self._nodes_features = np.array([node['feature'] for node in self._nodes])
 
         try:
@@ -46,17 +46,3 @@ class GAE:
         feat = self._nodes_features[node_id]
         adj_aug = np.concatenate((adj, feat))
         return self._encoder.predict(adj_aug.reshape(1, -1))[0]  # prediction on one sample
-
-
-if __name__ == '__main__':
-    gae = GAE(paths.the20news_dataset)
-    bad_doc_num = 0
-    for d2node in gae.doc_to_node_mapping:
-        if len(d2node) == 0:
-            bad_doc_num += 1
-
-    print('bad docs: {}/{}'.format(bad_doc_num, len(gae.doc_to_node_mapping)))  # 43% for reuters dataset
-    print(gae.doc_to_node_mapping)
-    print(gae.latent_feature(0))
-
-
