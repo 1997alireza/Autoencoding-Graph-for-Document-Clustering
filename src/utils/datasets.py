@@ -21,3 +21,12 @@ def fetch_dataset(dataset_path):
 
 def name_of_dataset(dataset_path):
     return dataset_path.split('/')[-1].split('.')[0]
+
+
+def number_of_labels(dataset_name):
+    if dataset_name == 'reuters-21578':
+        return 10
+    elif dataset_name == 'the20news':
+        return 20
+
+    raise Exception('dataset is not found')

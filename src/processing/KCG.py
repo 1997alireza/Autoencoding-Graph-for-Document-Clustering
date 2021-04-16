@@ -63,7 +63,7 @@ def create_kcg(documents, dataset_name=None):
 
     print('nodes\' features and adjacency vector are computed')
 
-    print('documents network is created')
+    print('KCG is created')
     return nodes, adjacency, doc_to_node_mapping
 
 
@@ -80,7 +80,7 @@ def get_documents_kcg(dataset_path):
     try:
         nodes, adjacency, doc_to_node_mapping = pickle.load(open(graph_file_path, 'rb'))
         documents_labels = data[:, 0]
-        print('documents network are loaded')
+        print('KCG is loaded')
     except FileNotFoundError:
         documents_labels = data[:, 0]
         documents = data[:, 1]
