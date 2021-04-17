@@ -5,6 +5,7 @@ import numpy as np
 from src.utils.datasets import name_of_dataset
 from tensorflow import keras
 from src.modelling.LoNGAE.models.ae import autoencoder_with_node_features
+from keras.models import clone_model
 
 
 class GAE:
@@ -46,3 +47,6 @@ class GAE:
         feat = self._nodes_features[node_id]
         adj_aug = np.concatenate((adj, feat))
         return self._encoder.predict(adj_aug.reshape(1, -1))[0]  # prediction on one sample
+
+    def get_encoder_clone(self):
+        return clone_model(self._encoder)

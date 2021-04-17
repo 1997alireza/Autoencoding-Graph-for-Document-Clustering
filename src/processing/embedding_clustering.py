@@ -1,8 +1,18 @@
-from sklearn.cluster import SpectralClustering
+from sklearn.cluster import SpectralClustering, KMeans
 import numpy as np
 
 
-def cluster_embeddings(doc2emb, document_num, n_labels):
+def cluster_embeddings(doc2emb, document_num, n_labels, method):
+    """
+
+    :param doc2emb:
+    :param document_num:
+    :param n_labels:
+    :param method: determine the clustering method which can be 'spectral' or 'kmeans' or 'deep'
+    :return:
+    """
+    assert method in ['spectral', 'kmeans', 'deep']
+
     embeddings = np.array(list(doc2emb.values()))
 
     if len(doc2emb) == document_num:
@@ -11,11 +21,12 @@ def cluster_embeddings(doc2emb, document_num, n_labels):
     else:
         # we use the last label for ignored documents
         n_clusters = n_labels - 1
-    clustering = SpectralClustering(n_clusters=n_clusters, random_state=0).fit(embeddings)
+        
+    labels = do_clustering(embeddings, n_clusters, method)
 
     doc2label = {}
     for i, doc_id in enumerate(doc2emb.keys()):
-        doc2label[doc_id] = clustering.labels_[i]
+        doc2label[doc_id] = labels[i]
 
     if len(doc2emb) != document_num:
         for i in range(document_num):
@@ -26,16 +37,36 @@ def cluster_embeddings(doc2emb, document_num, n_labels):
     return np.array(sorted(doc2label.items()))[:, 1]
 
 
-def cluster_embeddings_wo_ignored(doc2emb, true_labels, n_labels):
-    """clustering without considering the ignored documents in the graph"""
+def cluster_embeddings_wo_ignored(doc2emb, true_labels, n_labels, method):
+    """
+    clustering without considering the ignored documents in the graph
+    :param doc2emb: 
+    :param true_labels: 
+    :param n_labels:
+    :param method: determine the clustering method which can be 'spectral' or 'kmeans' or 'deep'
+    :return: 
+    """
+    assert method in ['spectral', 'kmeans', 'deep']
+    
     embeddings = np.array(list(doc2emb.values()))
 
-    clustering = SpectralClustering(n_clusters=n_labels, random_state=0).fit(embeddings)
+    labels = do_clustering(embeddings, n_labels, method)
 
     clustering_labels_wo_ignored, true_labels_wo_ignored = [], []
 
     for i, doc_id in enumerate(doc2emb.keys()):
-        clustering_labels_wo_ignored.append(clustering.labels_[i])
+        clustering_labels_wo_ignored.append(labels[i])
         true_labels_wo_ignored.append(true_labels[doc_id])
 
     return clustering_labels_wo_ignored, true_labels_wo_ignored
+
+
+def do_clustering(x, n_clusters, method):
+    if method == 'spectral':
+        clustering = SpectralClustering(n_clusters=n_clusters, random_state=0).fit(x)
+        return clustering.labels_
+    elif method == 'kmeans':
+        clustering = KMeans(n_clusters=n_clusters, random_state=0).fit(x)
+        return clustering.labels_
+    else:  # deep clustering
+        raise Exception('not implemented yet')  # TODO: deep clustering

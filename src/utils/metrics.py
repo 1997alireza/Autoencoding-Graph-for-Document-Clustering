@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.optimize import linear_sum_assignment
+from sklearn.metrics.cluster import adjusted_mutual_info_score
 
 
 def accuracy(true_labels, cluster_labels):
@@ -20,4 +21,8 @@ def accuracy(true_labels, cluster_labels):
     total_cost = costs[row_ind, col_ind].sum()
     total_accuracy = 1. - total_cost / len(true_labels)
 
-    return total_accuracy
+    return np.round(total_accuracy, 5)
+
+
+def adjusted_mutual_info(true_labels, cluster_labels):
+    return np.round(adjusted_mutual_info_score(true_labels, cluster_labels), 5)

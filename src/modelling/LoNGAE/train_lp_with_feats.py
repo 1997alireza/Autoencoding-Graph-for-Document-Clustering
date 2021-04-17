@@ -55,7 +55,6 @@ def run(adj, feats, validate=False, saving_directory=None):
     # Specify some hyperparameters
     epochs = 60  # based on validation on 150 epochs, we use early stopping with total 60 epochs
 
-
     train_batch_size = 20
 
     print('\nFitting autoencoder model...\n')

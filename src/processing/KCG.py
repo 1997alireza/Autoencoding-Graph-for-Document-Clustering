@@ -34,7 +34,6 @@ def create_kcg(documents, dataset_name=None):
     keyword_sents = extract_top_keywords(documents_sentences, dataset_name=dataset_name)
     if THE_DUMMY_NODE in keyword_sents:
         del keyword_sents[THE_DUMMY_NODE]  # not considering the dummy node in the graph
-        # TODO: may differ from the original paper
 
     nodes = []  # a list of {'keyword', 'feature'}
     adjacency = np.zeros([len(keyword_sents), len(keyword_sents)], dtype=float)
