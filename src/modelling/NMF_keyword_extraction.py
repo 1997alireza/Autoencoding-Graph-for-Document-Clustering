@@ -13,8 +13,9 @@ import paths
 THE_DUMMY_NODE = 'THE_DUMMY_NODE'
 
 
-def extract_top_keywords(documents_sentences, max_number=50, dataset_name=None):
+def extract_top_keywords(documents_sentences, max_number=100, dataset_name=None):
     """
+    Note: to have small models: max_number=50, big models: max_number=100
     :param documents_sentences: a 2d list of sentences. the sentences of each row are related to one document
     :param max_number: maximum number of returned keywords
     :param dataset_name: is used to save or load top keywords
@@ -23,7 +24,7 @@ def extract_top_keywords(documents_sentences, max_number=50, dataset_name=None):
 
     keywords_file_path = None
     if dataset_name is not None:
-        keywords_file_path = paths.models + 'document_keywords_set/' + dataset_name + '.pkl'
+        keywords_file_path = paths.models + 'document_keywords_set/big_' + dataset_name + '.pkl'
         try:
             keyword_sents = pickle.load(open(keywords_file_path, 'rb'))
             print('top keywords of documents are loaded')

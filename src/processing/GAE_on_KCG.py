@@ -20,7 +20,7 @@ class GAE:
 
     def _train(self, validate=False):
         self._encoder, self._ae = run(self._adjacency, self._nodes_features,
-                                      saving_directory=paths.models + 'graph_ae/{}/'.format(name_of_dataset(self.dataset_path)),
+                                      saving_directory=paths.models + 'graph_ae/big_{}/'.format(name_of_dataset(self.dataset_path)),
                                       validate=validate)
 
     def validate(self):
@@ -32,7 +32,7 @@ class GAE:
         :raise OSError: when the model file is not found
         :return:
         """
-        directory_path = paths.models + 'graph_ae/{}/'.format(name_of_dataset(self.dataset_path))
+        directory_path = paths.models + 'graph_ae/big_{}/'.format(name_of_dataset(self.dataset_path))
 
         encoder = keras.models.load_model(directory_path + 'encoder.keras')
         _, ae = autoencoder_with_node_features(self._adjacency.shape[1], self._nodes_features.shape[1])

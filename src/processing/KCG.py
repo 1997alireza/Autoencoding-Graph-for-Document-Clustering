@@ -74,7 +74,7 @@ def get_documents_kcg(dataset_path):
              and documents_labels; a list of each document's label
     """
     dataset_name = name_of_dataset(dataset_path)
-    graph_file_path = paths.models + 'keyword_correlation_graph/' + dataset_name + '.pkl'
+    graph_file_path = paths.models + 'keyword_correlation_graph/big_' + dataset_name + '.pkl'
     data = fetch_dataset(dataset_path)
     try:
         nodes, adjacency, doc_to_node_mapping = pickle.load(open(graph_file_path, 'rb'))

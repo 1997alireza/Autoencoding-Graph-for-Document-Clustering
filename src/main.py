@@ -11,7 +11,7 @@ if __name__ == '__main__':
     gae = GAE(dataset_path)
     doc2emb = extract_embeddings(gae)
 
-    clustering_method = 'deep'  # in ['spectral', 'kmeans', 'deep']
+    clustering_method = 'spectral'  # in ['spectral', 'kmeans', 'deep']
     print("\nCLUSTERING METHOD <{}>".format(clustering_method))
     clustering_labels = cluster_embeddings(doc2emb,
                                            document_num=len(gae.documents_labels),
