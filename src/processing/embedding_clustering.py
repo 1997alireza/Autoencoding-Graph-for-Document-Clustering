@@ -1,4 +1,5 @@
 from sklearn.cluster import SpectralClustering, KMeans
+from src.modelling.deep_clustering.clustering_model import DeepClusteringModel
 import numpy as np
 
 
@@ -68,5 +69,7 @@ def do_clustering(x, n_clusters, method):
     elif method == 'kmeans':
         clustering = KMeans(n_clusters=n_clusters, random_state=0).fit(x)
         return clustering.labels_
-    else:  # deep clustering
-        raise Exception('not implemented yet')  # TODO: deep clustering
+    else:  # method == 'deep'
+        deep_clustering = DeepClusteringModel(data_size=x.shape[1], n_clusters=n_clusters)
+        deep_clustering.train(x)
+        return deep_clustering.clusters(x)

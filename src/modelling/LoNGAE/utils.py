@@ -10,7 +10,6 @@ def generate_data(adj, feats, shuffle=True):
     zipped = list(zip(adj, feats))
     while True:  # this flag yields an infinite generator
         if shuffle:
-            # print('Shuffling data')
             np.random.shuffle(zipped)
         for data in zipped:
             a, f = data
