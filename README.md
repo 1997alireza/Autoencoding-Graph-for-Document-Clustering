@@ -19,5 +19,5 @@ This autoencoder model is applied on KCG ([`Applying the GAE on KCG`](src/proces
 
 ### Clustering
 The clustering methods are applied on the latent space of GAE ([`Clustering`](src/processing/embedding_clustering.py)).
-<br/>
+
 One of the implemented clustering methods in this project is [`Deep Clustering`](src/modelling/deep_clustering/clustering_model.py).
