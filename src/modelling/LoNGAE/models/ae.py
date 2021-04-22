@@ -1,10 +1,8 @@
 import numpy as np
-import tensorflow as tf
 from keras.layers import Input, Dense, Dropout, Lambda, Activation
 from keras.models import Model
 from keras import optimizers
 from keras import backend as K
-
 from ..layers.custom import DenseTied
 
 
@@ -15,67 +13,6 @@ def mvn(tensor):
     std = K.std(tensor, axis=1, keepdims=True)
     mvn = (tensor - mean) / (std + epsilon)
     return mvn
-
-
-def mbce(y_true, y_pred):
-    """ Balanced sigmoid cross-entropy loss with masking """
-    mask = K.not_equal(y_true, -1.0)
-    mask = K.cast(mask, dtype=np.float32)
-    num_examples = K.sum(mask, axis=1)
-    pos = K.cast(K.equal(y_true, 1.0), dtype=np.float32)
-    num_pos = K.sum(pos, axis=None)
-    neg = K.cast(K.equal(y_true, 0.0), dtype=np.float32)
-    num_neg = K.sum(neg, axis=None)
-    pos_ratio = 1.0 - num_pos / num_neg
-    mbce = mask * tf.nn.weighted_cross_entropy_with_logits(
-            targets=y_true,
-            logits=y_pred,
-            pos_weight=pos_ratio
-    )
-    mbce = K.sum(mbce, axis=1) / num_examples
-    return K.mean(mbce, axis=-1)
-
-
-def ce(y_true, y_pred):
-    """ Sigmoid cross-entropy loss """
-    return K.mean(K.binary_crossentropy(
-        target=y_true,
-        output=y_pred,
-        from_logits=True),
-        axis=-1)
-
-
-def masked_ce(y_true, y_pred):
-    """ Sigmoid cross-entropy loss with masking """
-    mask = K.not_equal(y_true, -1.0)
-    mask = K.cast(mask, dtype=np.float32)
-    masked_ce = mask * K.binary_crossentropy(
-        target=y_true,
-        output=y_pred,
-        from_logits=True)
-    return K.mean(masked_ce, axis=-1)
-
-
-def masked_categorical_crossentropy(y_true, y_pred):
-    """ Categorical/softmax cross-entropy loss with masking """
-    mask = y_true[:, -1]
-    y_true = y_true[:, :-1]
-    loss = K.categorical_crossentropy(target=y_true,
-                                      output=y_pred,
-                                      from_logits=True)
-    mask = K.cast(mask, dtype=np.float32)
-    loss *= mask
-    return K.mean(loss, axis=-1)
-
-
-def masked_mean_squared_error(y_true, y_pred):
-    """ Mean Squared Error with masking """
-    mask = K.not_equal(y_true, -1.0)  # ignoring deleted edges based on validation set
-    mask = K.cast(mask, dtype=np.float32)
-
-    err = y_true - y_pred
-    masked_squared_err = K.square(err) * mask
-    return K.mean(masked_squared_err, axis=-1)
 
 
 def autoencoder_with_node_features(adj_row_length, features_length):

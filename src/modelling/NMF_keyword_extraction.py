@@ -13,9 +13,9 @@ import paths
 THE_DUMMY_NODE = 'THE_DUMMY_NODE'
 
 
-def extract_top_keywords(documents_sentences, max_number=100, dataset_name=None):
+def extract_top_keywords(documents_sentences, max_number=70, dataset_name=None):
     """
-    Note: to have small models: max_number=50, big models: max_number=100
+    Note: to have a small KCG: max_number=50, big KCG: max_number=70
     :param documents_sentences: a 2d list of sentences. the sentences of each row are related to one document
     :param max_number: maximum number of returned keywords
     :param dataset_name: is used to save or load top keywords
