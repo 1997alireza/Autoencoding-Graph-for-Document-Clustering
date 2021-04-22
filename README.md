@@ -1,8 +1,8 @@
 # Autoencoding-Graph-for-Document-Clustering
 
-An attempt to reprodce the main results of the paper [Autoencoding Keyword Correlation Graph for Document Clustering](https://www.aclweb.org/anthology/2020.acl-main.366/).
+An attempt to reproduce the main results of the paper [Autoencoding Keyword Correlation Graph for Document Clustering](https://www.aclweb.org/anthology/2020.acl-main.366/).
 
-To evaluate and produce the results you can run [`the main file`](src/main.py).
+To evaluate and produce the results, you can run [`the main file`](src/main.py).
 
 Key pieces of the implementation:
 
@@ -17,7 +17,7 @@ Then KCG is created ([`KCG Construction`](src/processing/KCG.py)).
 ### Grarph Autoencoder (GAE)
 [`Local Neighborhood Graph Autoencoder (LoNGAE)`](src/modelling/LoNGAE/models/ae.py) is used in this step.
 
-This autoencoder model is applied on KCG ([`Applying the GAE on KCG`](src/processing/GAE_on_KCG.py)).
+This autoencoder model is applied to KCG ([`Applying the GAE to KCG`](src/processing/GAE_to_KCG.py)).
 
 ### Clustering
 The clustering methods are applied on the latent space of GAE ([`Clustering`](src/processing/embedding_clustering.py)).
