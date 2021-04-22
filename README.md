@@ -3,6 +3,7 @@
 An attempt to reproduce the main results of the paper [Autoencoding Keyword Correlation Graph for Document Clustering](https://www.aclweb.org/anthology/2020.acl-main.366/).
 
 To evaluate and produce the results, you can run [`the main file`](src/main.py).
+The results of evaluations are provided in [`this jupyter notebook`](evaluation.ipynb).
 
 Key pieces of the implementation:
 
