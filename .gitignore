@@ -1,6 +1,7 @@
 .idea
 __pycache__
 .DS_Store
+.ipynb_checkpoints
 
 test/
 venv/

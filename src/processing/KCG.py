@@ -14,7 +14,7 @@ from src.utils.text import preprocess
 from src.utils.datasets import name_of_dataset
 
 
-def create_kcg(documents, dataset_name=None):
+def create_kcg(documents, big_graph, dataset_name=None):
     """
 
     :param documents: list of documents, each document is taken as a string
@@ -31,7 +31,7 @@ def create_kcg(documents, dataset_name=None):
     doc_to_node_mapping = [[] for _ in range(len(documents_sentences))]
     # doc_to_node_mapping[i] is a list containing the indexes of the nodes related to the i-th document
 
-    keyword_sents = extract_top_keywords(documents_sentences, dataset_name=dataset_name)
+    keyword_sents = extract_top_keywords(documents_sentences, big_graph, dataset_name=dataset_name)
     if THE_DUMMY_NODE in keyword_sents:
         del keyword_sents[THE_DUMMY_NODE]  # not considering the dummy node in the graph
 
@@ -66,7 +66,7 @@ def create_kcg(documents, dataset_name=None):
     return nodes, adjacency, doc_to_node_mapping
 
 
-def get_documents_kcg(dataset_path):
+def get_documents_kcg(dataset_path, big_graph):
     """
 
     :param dataset_path: paths.reuters_dataset or paths.the20news_dataset
@@ -74,7 +74,10 @@ def get_documents_kcg(dataset_path):
              and documents_labels; a list of each document's label
     """
     dataset_name = name_of_dataset(dataset_path)
-    graph_file_path = paths.models + 'keyword_correlation_graph/big_' + dataset_name + '.pkl'
+    if big_graph:
+        graph_file_path = paths.models + 'keyword_correlation_graph/big_' + dataset_name + '.pkl'
+    else:
+        graph_file_path = paths.models + 'keyword_correlation_graph/' + dataset_name + '.pkl'
     data = fetch_dataset(dataset_path)
     try:
         nodes, adjacency, doc_to_node_mapping = pickle.load(open(graph_file_path, 'rb'))
@@ -84,7 +87,7 @@ def get_documents_kcg(dataset_path):
         documents_labels = data[:, 0]
         documents = data[:, 1]
         documents = [preprocess(doc) for doc in documents]
-        nodes, adjacency, doc_to_node_mapping = create_kcg(documents, dataset_name)
+        nodes, adjacency, doc_to_node_mapping = create_kcg(documents, big_graph, dataset_name)
         pickle.dump((nodes, adjacency, doc_to_node_mapping), open(graph_file_path, 'wb'))
 
     return nodes, adjacency, doc_to_node_mapping, documents_labels
