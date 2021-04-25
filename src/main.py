@@ -66,3 +66,9 @@ if __name__ == '__main__':
     clustering_method = 'spectral'
     print("\nCLUSTERING METHOD <{}> on dataset <{}>".format(clustering_method, name_of_dataset(dataset_path)))
     run(dataset_path, clustering_method, big_graph=True, verbose=True)
+
+    # ignored documents:
+    # retuers - small graph: 3391/7884 (43%)
+    # retuers - big graph: 1793/7884 (22%)
+    # the20news - small graph: 5458/18692 (29%)
+    # the20news - big graph: 3580/18692 (19%)
