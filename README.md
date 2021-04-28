@@ -1,9 +1,13 @@
 # Autoencoding-Graph-for-Document-Clustering
 
-An attempt to reproduce the main results of the paper [Autoencoding Keyword Correlation Graph for Document Clustering](https://www.aclweb.org/anthology/2020.acl-main.366/).
+An attempt to reproduce the main results of the paper [Autoencoding Keyword Correlation Graph for Document Clustering](https://www.aclweb.org/anthology/2020.acl-main.366/). Sentence similarity property for edge weights, SBERT for sentence embeddings, and MTGAE (LoNGAE) for graph autoencoding are used in this project.
 
 To evaluate and produce the results, you can run [`the main file`](src/main.py).
 The results of evaluations are provided in [`this jupyter notebook`](evaluation.ipynb).
+
+<p align="center">
+<img src="docs/images/autoencoding-KCG.png?raw=True" alt="Actors Network" width="60%"/>
+</p>
 
 Key pieces of the implementation:
 
