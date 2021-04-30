@@ -1,4 +1,4 @@
-# Autoencoding-Graph-for-Document-Clustering
+# Reproducibility Challenge: Autoencoding Keyword Correlation Graph for Document Clustering
 
 An attempt to reproduce the main results of the paper [Autoencoding Keyword Correlation Graph for Document Clustering](https://www.aclweb.org/anthology/2020.acl-main.366/). Sentence similarity property for edge weights, SBERT for sentence embeddings, and MTGAE (LoNGAE) for graph autoencoding are used in this project. The final reproducility report is available [here](docs/Report.pdf).
 
